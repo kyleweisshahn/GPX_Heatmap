@@ -15,6 +15,7 @@
   <div id="controls">
     <label for="opacity-slider">Heatmap Opacity:</label>
     <input type="range" id="opacity-slider" min="0" max="1" step="0.01" value="0.6">
+    <button id="apply-opacity">Apply</button>
     <div id="legend">
       <span>Low</span>
       <div class="gradient-bar"></div>
@@ -22,7 +23,6 @@
     </div>
   </div>
 
-  <!-- Correct script loading order -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet.heat/dist/leaflet-heat.js"></script>
   <script src="https://unpkg.com/leaflet-providers/leaflet-providers.js"></script>

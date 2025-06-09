@@ -12,10 +12,10 @@ body {
 
 #controls {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   width: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   padding: 10px 20px;
   z-index: 1000;
   font-size: 14px;
@@ -36,4 +36,8 @@ body {
   width: 120px;
   background: linear-gradient(to right, green, yellow, red);
   border: 1px solid #999;
+}
+
+#apply-opacity {
+  margin-left: 10px;
 }

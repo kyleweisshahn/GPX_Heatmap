@@ -9,7 +9,6 @@ const baseLayers = {
   "Aerial": L.tileLayer.provider('Esri.WorldImagery')
 };
 
-// Default to Aerial
 baseLayers["Aerial"].addTo(map);
 L.control.layers(baseLayers).addTo(map);
 
@@ -31,8 +30,11 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
         const lat = parseFloat(trkpts[i].getAttribute('lat'));
         const lon = parseFloat(trkpts[i].getAttribute('lon'));
         if (!isNaN(lat) && !isNaN(lon)) {
-          latlngs.push([lat, lon]);
-          bounds.push([lat, lon]);
+          // Rounded for basic snapping (5 decimals ~1.1m resolution)
+          const roundedLat = parseFloat(lat.toFixed(5));
+          const roundedLon = parseFloat(lon.toFixed(5));
+          latlngs.push([roundedLat, roundedLon]);
+          bounds.push([roundedLat, roundedLon]);
         }
       }
 
@@ -78,8 +80,9 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
   if (bounds.length) map.fitBounds(bounds);
 });
 
-document.getElementById('opacity-slider').addEventListener('input', (event) => {
+document.getElementById('apply-opacity').addEventListener('click', () => {
   if (heatLayer) {
-    heatLayer.setOptions({ opacity: parseFloat(event.target.value) });
+    const newOpacity = parseFloat(document.getElementById('opacity-slider').value);
+    heatLayer.setOptions({ opacity: newOpacity });
   }
 });
