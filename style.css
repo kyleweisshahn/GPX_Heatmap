@@ -1,11 +1,24 @@
-body {
-  margin: 0;
-  font-family: sans-serif;
-  text-align: center;
+#controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  z-index: 1000;
+  font-size: 14px;
+  border-radius: 4px;
 }
 
-#map {
-  height: 90vh;
-  width: 100%;
-  margin-top: 10px;
+#legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.gradient-bar {
+  height: 10px;
+  width: 100px;
+  background: linear-gradient(to right, green, yellow, red);
+  border: 1px solid #999;
 }
