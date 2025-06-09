@@ -1,4 +1,3 @@
-// Optional: Load dom-to-image for map export
 const domToImageScript = document.createElement('script');
 domToImageScript.src = "https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js";
 document.head.appendChild(domToImageScript);
@@ -17,83 +16,74 @@ const baseLayers = {
 baseLayers["Aerial"].addTo(map);
 L.control.layers(baseLayers).addTo(map);
 
-let heatPoints = [];
-let heatLayer = null;
+let polyLayer = null;
+let segmentCount = {};
 
 document.getElementById('gpx-upload').addEventListener('change', async (event) => {
   const files = Array.from(event.target.files);
   let bounds = [];
 
-  const parseGPX = (gpxText) => {
-    try {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(gpxText, "application/xml");
-      const trkpts = xml.getElementsByTagName('trkpt');
-      const latlngs = [];
-
-      for (let i = 0; i < trkpts.length; i++) {
-        const lat = parseFloat(trkpts[i].getAttribute('lat'));
-        const lon = parseFloat(trkpts[i].getAttribute('lon'));
-        if (!isNaN(lat) && !isNaN(lon)) {
-          const roundedLat = parseFloat(lat.toFixed(5));
-          const roundedLon = parseFloat(lon.toFixed(5));
-          latlngs.push([roundedLat, roundedLon]);
-          bounds.push([roundedLat, roundedLon]);
-        }
-      }
-
-      const simplify = document.getElementById('simplify-tracks').checked;
-      if (simplify) {
-        return simplifyPath(latlngs, 0.0001); // tolerance in degrees
-      }
-
-      return latlngs;
-    } catch (e) {
-      console.warn("Failed to parse GPX file:", e);
-      return [];
-    }
-  };
+  segmentCount = {};
 
   for (const file of files) {
     const text = await file.text();
     const latlngs = parseGPX(text);
 
-    if (latlngs.length > 0) {
-      heatPoints.push(...latlngs);
-    } else {
-      console.warn(`No valid track points in: ${file.name}`);
+    if (latlngs.length > 1) {
+      const simplified = document.getElementById('simplify-tracks').checked
+        ? simplifyPath(latlngs, 0.0001)
+        : latlngs;
+
+      for (let i = 0; i < simplified.length - 1; i++) {
+        const key = getSegmentKey(simplified[i], simplified[i + 1]);
+        segmentCount[key] = (segmentCount[key] || 0) + 1;
+        bounds.push(simplified[i]);
+        bounds.push(simplified[i + 1]);
+      }
     }
   }
 
-  if (heatPoints.length === 0) {
+  if (Object.keys(segmentCount).length === 0) {
     alert("No valid GPX data found.");
     return;
   }
 
-  if (heatLayer) map.removeLayer(heatLayer);
+  if (polyLayer) map.removeLayer(polyLayer);
 
-  heatLayer = L.heatLayer(heatPoints, {
-    radius: 10,
-    blur: 15,
-    maxZoom: 17,
-    gradient: {
-      0.0: 'green',
-      0.5: 'yellow',
-      1.0: 'red'
-    },
-    opacity: parseFloat(document.getElementById('opacity-slider').value)
+  const segments = Object.keys(segmentCount).map(key => {
+    const [lat1, lon1, lat2, lon2] = key.split(',').map(Number);
+    return {
+      latlngs: [[lat1, lon1], [lat2, lon2]],
+      count: segmentCount[key]
+    };
   });
 
-  heatLayer.addTo(map);
+  const maxCount = Math.max(...segments.map(s => s.count));
+  polyLayer = L.layerGroup();
 
+  for (const seg of segments) {
+    const ratio = seg.count / maxCount;
+    const color = ratio < 0.33 ? 'green' : ratio < 0.66 ? 'yellow' : 'red';
+
+    L.polyline(seg.latlngs, {
+      color,
+      weight: 4,
+      opacity: parseFloat(document.getElementById('opacity-slider').value)
+    }).addTo(polyLayer);
+  }
+
+  polyLayer.addTo(map);
   if (bounds.length) map.fitBounds(bounds);
 });
 
 document.getElementById('apply-opacity').addEventListener('click', () => {
-  if (heatLayer) {
-    const newOpacity = parseFloat(document.getElementById('opacity-slider').value);
-    heatLayer.setOptions({ opacity: newOpacity });
-  }
+  if (!polyLayer) return;
+  const opacity = parseFloat(document.getElementById('opacity-slider').value);
+  polyLayer.eachLayer(layer => {
+    if (layer.setStyle) {
+      layer.setStyle({ opacity });
+    }
+  });
 });
 
 document.getElementById('export-map').addEventListener('click', () => {
@@ -109,6 +99,35 @@ document.getElementById('export-map').addEventListener('click', () => {
       alert('Export failed.');
     });
 });
+
+function parseGPX(gpxText) {
+  try {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(gpxText, "application/xml");
+    const trkpts = xml.getElementsByTagName('trkpt');
+    const latlngs = [];
+
+    for (let i = 0; i < trkpts.length; i++) {
+      const lat = parseFloat(trkpts[i].getAttribute('lat'));
+      const lon = parseFloat(trkpts[i].getAttribute('lon'));
+      if (!isNaN(lat) && !isNaN(lon)) {
+        latlngs.push([parseFloat(lat.toFixed(5)), parseFloat(lon.toFixed(5))]);
+      }
+    }
+
+    return latlngs;
+  } catch (e) {
+    console.warn("Failed to parse GPX file:", e);
+    return [];
+  }
+}
+
+function getSegmentKey(p1, p2) {
+  const sorted = [p1, p2].sort((a, b) =>
+    a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]
+  );
+  return sorted.flat().join(',');
+}
 
 function simplifyPath(points, tolerance) {
   if (points.length < 3) return points;
