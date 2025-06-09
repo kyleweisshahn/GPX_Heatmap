@@ -10,12 +10,17 @@
 <body>
   <h1>GPX Heatmap Viewer</h1>
   <input type="file" id="gpx-upload" multiple accept=".gpx" />
+  <label>
+    <input type="checkbox" id="simplify-tracks" />
+    Simplify tracks (smooth)
+  </label>
   <div id="map"></div>
 
   <div id="controls">
     <label for="opacity-slider">Heatmap Opacity:</label>
     <input type="range" id="opacity-slider" min="0" max="1" step="0.01" value="0.6">
     <button id="apply-opacity">Apply</button>
+    <button id="export-map">Export</button>
     <div id="legend">
       <span>Low</span>
       <div class="gradient-bar"></div>

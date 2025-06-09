@@ -38,6 +38,7 @@ body {
   border: 1px solid #999;
 }
 
-#apply-opacity {
+#apply-opacity,
+#export-map {
   margin-left: 10px;
 }
