@@ -9,10 +9,12 @@ const baseLayers = {
   "Aerial": L.tileLayer.provider('Esri.WorldImagery')
 };
 
+// Default to Aerial
 baseLayers["Aerial"].addTo(map);
 L.control.layers(baseLayers).addTo(map);
 
 let heatPoints = [];
+let heatLayer = null;
 
 document.getElementById('gpx-upload').addEventListener('change', async (event) => {
   const files = Array.from(event.target.files);
@@ -42,7 +44,10 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
     heatPoints.push(...latlngs);
   }
 
-  const heatLayer = L.heatLayer(heatPoints, {
+  // Remove existing layer if present
+  if (heatLayer) map.removeLayer(heatLayer);
+
+  heatLayer = L.heatLayer(heatPoints, {
     radius: 10,
     blur: 15,
     maxZoom: 17,
@@ -56,9 +61,12 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
 
   heatLayer.addTo(map);
 
-  document.getElementById('opacity-slider').addEventListener('input', () => {
-    heatLayer.setOptions({ opacity: parseFloat(event.target.value) });
-  });
-
   if (bounds.length) map.fitBounds(bounds);
+});
+
+// Update opacity
+document.getElementById('opacity-slider').addEventListener('input', (event) => {
+  if (heatLayer) {
+    heatLayer.setOptions({ opacity: parseFloat(event.target.value) });
+  }
 });
