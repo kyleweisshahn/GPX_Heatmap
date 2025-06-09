@@ -21,27 +21,42 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
   let bounds = [];
 
   const parseGPX = (gpxText) => {
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(gpxText, "application/xml");
-    const trkpts = xml.getElementsByTagName('trkpt');
-    const latlngs = [];
+    try {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(gpxText, "application/xml");
+      const trkpts = xml.getElementsByTagName('trkpt');
+      const latlngs = [];
 
-    for (let i = 0; i < trkpts.length; i++) {
-      const lat = parseFloat(trkpts[i].getAttribute('lat'));
-      const lon = parseFloat(trkpts[i].getAttribute('lon'));
-      if (!isNaN(lat) && !isNaN(lon)) {
-        latlngs.push([lat, lon]);
-        bounds.push([lat, lon]);
+      for (let i = 0; i < trkpts.length; i++) {
+        const lat = parseFloat(trkpts[i].getAttribute('lat'));
+        const lon = parseFloat(trkpts[i].getAttribute('lon'));
+        if (!isNaN(lat) && !isNaN(lon)) {
+          latlngs.push([lat, lon]);
+          bounds.push([lat, lon]);
+        }
       }
-    }
 
-    return latlngs;
+      return latlngs;
+    } catch (e) {
+      console.warn("Failed to parse GPX file:", e);
+      return [];
+    }
   };
 
   for (const file of files) {
     const text = await file.text();
     const latlngs = parseGPX(text);
-    heatPoints.push(...latlngs);
+
+    if (latlngs.length > 0) {
+      heatPoints.push(...latlngs);
+    } else {
+      console.warn(`No valid track points in: ${file.name}`);
+    }
+  }
+
+  if (heatPoints.length === 0) {
+    alert("No valid GPX data found.");
+    return;
   }
 
   if (heatLayer) map.removeLayer(heatLayer);
