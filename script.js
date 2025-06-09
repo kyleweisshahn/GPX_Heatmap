@@ -44,7 +44,6 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
     heatPoints.push(...latlngs);
   }
 
-  // Remove existing layer if present
   if (heatLayer) map.removeLayer(heatLayer);
 
   heatLayer = L.heatLayer(heatPoints, {
@@ -64,7 +63,6 @@ document.getElementById('gpx-upload').addEventListener('change', async (event) =
   if (bounds.length) map.fitBounds(bounds);
 });
 
-// Update opacity
 document.getElementById('opacity-slider').addEventListener('input', (event) => {
   if (heatLayer) {
     heatLayer.setOptions({ opacity: parseFloat(event.target.value) });

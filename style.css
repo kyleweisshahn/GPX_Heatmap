@@ -1,3 +1,15 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#map {
+  height: 90vh;
+  width: 100%;
+  margin-top: 10px;
+}
+
 #controls {
   position: absolute;
   top: 0;
