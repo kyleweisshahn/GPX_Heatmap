@@ -20,6 +20,7 @@ body {
   z-index: 1000;
   font-size: 14px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
