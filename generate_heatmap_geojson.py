@@ -6,7 +6,6 @@ from shapely.geometry import LineString, mapping
 from collections import defaultdict
 import geojson
 
-ORS_API_KEY = '5b3ce3597851110001cf624851dc40ac20e043cc8ca7ea17f7b8baa9'
 ORS_ENDPOINT = 'https://api.openrouteservice.org/v2/directions/cycling-regular'
 
 INPUT_DIR = 'data/apple_health_export/workout-routes'
